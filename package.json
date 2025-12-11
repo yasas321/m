@@ -1,0 +1,44 @@
+{
+  "name": "CYBER-HUNTER",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot with Multi-Number Support",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "baileys": "npm:@fuxxy-star/baileys@latest",
+    "@xaviabot/fb-downloader": "latest",
+    "darksadas-yt-pornhub-scrape": "latest",
+    "@dark-yasiya/scrap": "latest",
+    "express": "latest",
+    "fs-extra": "latest",
+    "node-fetch": "latest",
+    "dotenv": "latest",
+    "pino": "latest",
+    "jimp": "latest",
+    "form-data": "latest",
+    "@octokit/rest": "latest",
+    "child_process": "latest",
+    "denethdev-ytmp3": "latest",
+    "path": "latest",
+    "axios": "latest",
+    "yt-search": "latest",
+    "moment-timezone": "latest",
+    "xnxx-scraper": "latest"
+    
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "multi-device",
+    "baileys",
+    "shala-md"
+  ],
+  "author": "SHALA",
+  "license": "MIT"
+}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Queen Asha Mini Bot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Orbitron', Arial, sans-serif;
+      background: radial-gradient(circle at top left, #0ff, #00f, #000);
+      overflow: hidden;
+      color: #00f2ff;
+    }
+
+    /* Neon container */
+    .container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .box {
+      width: 360px;
+      padding: 30px;
+      background: rgba(0,0,0,0.9);
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff inset;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 2px solid #ff00ff;
+    }
+
+    .box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #ff00ff, 0 0 60px #ff00ff inset;
+    }
+
+    h3 {
+      margin: 10px 0 5px 0;
+      font-size: 2rem;
+      text-shadow: 0 0 12px #ff00ff;
+    }
+
+    h6 {
+      margin: 5px 0;
+      font-size: 1rem;
+      color: #ff00ffaa;
+    }
+
+    .input-container {
+      display: flex;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .input-container input {
+      width: 70%;
+      height: 3rem;
+      border-radius: 10px 0 0 10px;
+      border: none;
+      outline: none;
+      padding-left: 1rem;
+      font-size: 1rem;
+      background: #e0f7ff;
+      color: #000;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .input-container input:focus {
+      box-shadow: 0 0 15px #ff00ff;
+    }
+
+    .input-container button {
+      width: 30%;
+      border-radius: 0 10px 10px 0;
+      background: #ff00ff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .input-container button:hover {
+      background: #ff66ff;
+      color: #000;
+      box-shadow: 0 0 15px #ff00ff;
+    }
+
+    a.centered-text {
+      color: #fff;
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #ff00ff;
+    }
+
+    font#copy {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    font#copy:hover {
+      color: #ff00ff;
+      text-shadow: 0 0 15px #ff66ff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Floating neon lines */
+    .line {
+      position: absolute;
+      width: 2px;
+      height: 120vh;
+      background: linear-gradient(180deg, #ff00ff, transparent);
+      animation: moveLines linear infinite;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    @keyframes moveLines {
+      0% { transform: translateY(-120vh); }
+      100% { transform: translateY(120vh); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating lines -->
+  <script>
+    for (let i = 0; i < 15; i++) {
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.style.left = Math.random() * 100 + 'vw';
+      line.style.animationDuration = (Math.random() * 5 + 5) + 's';
+      document.body.appendChild(line);
+    }
+  </script>
+
+  <!-- Background music -->
+  <audio id="bgMusic" loop>
+    <source src="https://files.catbox.moe/4cvg2s.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="container">
+    <div class="box">
+      <i class="fa fa-user" style="color:#ff00ff; font-size:2rem;"></i>
+      <h3>Queen Asha Mini Bot</h3>
+      <h6>Developer: Kavindu & Ishan 👻</h6>
+      <h6>🔢 Enter your number with country code</h6>
+
+      <div class="input-container">
+        <input placeholder="9476xxxxxxx" type="number" id="number">
+        <button id="submit">Submit</button>
+      </div>
+
+      <a id="waiting-message" class="centered-text" style="display: none;">Please wait a while...</a>
+      <main id="pair"></main>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+  <script>
+    const a = document.getElementById("pair");
+    const b = document.getElementById("submit");
+    const c = document.getElementById("number");
+    const audio = document.getElementById("bgMusic");
+
+    async function Copy() {
+      const text = document.getElementById("copy").innerText;
+      const obj = document.getElementById("copy");
+      await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
+      obj.innerText = "COPIED";
+      obj.style = "color:blue;font-weight:bold";
+      setTimeout(() => {
+        obj.innerText = text;
+        obj.style = "color:white;font-weight:bold";
+      }, 500);
+    }
+
+    b.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (audio.paused) audio.play().catch(err => console.log("Autoplay blocked:", err));
+
+      if (!c.value) {
+        a.innerHTML = '<a style="color:white;font-weight:bold">Enter your WhatsApp number with Country Code</a><br><br>';
+      } else if (c.value.replace(/[^0-9]/g, "").length < 11) {
+        a.innerHTML = '<a style="color:red;font-weight:bold">Invalid Number</a><br><br>';
+      } else {
+        const number = c.value.replace(/[^0-9]/g, "");
+        c.type = "text";
+        c.value = "+" + number;
+        c.style = "color:black;font-size:20px";
+        a.innerHTML = '<a style="color:white;font-weight:bold">Please Wait...</a><br><br>';
+        try {
+          const { data } = await axios(`/code?number=${number}`);
+          const code = data.code || "Service Unavailable";
+          a.innerHTML = `<font id="copy" onclick="Copy()" style="color:red;font-weight:bold" size="5">CODE: <span style="color:white;">${code}</span></font><br><br><br>`;
+        } catch {
+          a.innerHTML = '<a style="color:red;font-weight:bold">Error fetching code. Try again later.</a>';
+        }
+      }
+    });
+  </script>
+</body>
+    </html>
