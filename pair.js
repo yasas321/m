@@ -623,12 +623,19 @@ case 'set': {
     break;
 }
 
-               case 'menu': {
+              case 'menu': {
+    // ඔබේ බොට් එකේ connection variable එක මෙතනට දාන්න (උදා: socket, client, conn)
+    // ගොඩක් වෙලාවට මේක 'conn' හෝ 'client' වෙන්න පුළුවන්. කලින් එකේ 'socket' තිබුනා.
+    const bot = socket || conn || client; 
+
     const startTime = socketCreationTime.get(number) || Date.now();
     const uptime = Math.floor((Date.now() - startTime) / 1000);
     const hours = Math.floor(uptime / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
+    
+    // Prefix එක නිවැරදිව ලබා ගැනීම
+    const p = config.PREFIX || '.'; 
 
     const menuText = `
 ❲ 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥 ❳
@@ -654,12 +661,15 @@ Auto deploy and free ❕
 > 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥`;
 
     try {
-        await sock.sendMessage(from, {
+        // Image එක සකස් කිරීම (Error එක මඟ හැරීමට සරල ක්‍රමය)
+        const imageBuffer = { url: "https://files.catbox.moe/j8003b.jpg" };
+
+        await bot.sendMessage(from, {
             interactiveMessage: {
                 header: {
                     title: "👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ",
                     hasMediaAttachment: true,
-                    imageMessage: (await sock.prepareMessageMedia({ url: "https://files.catbox.moe/j8003b.jpg" }, "imageMessage")).imageMessage
+                    imageMessage: (await bot.prepareMessageMedia(imageBuffer, "imageMessage")).imageMessage
                 },
                 body: {
                     text: menuText
@@ -673,14 +683,14 @@ Auto deploy and free ❕
                             name: "quick_reply",
                             buttonParamsJson: JSON.stringify({
                                 display_text: "ᴀʟɪᴠᴇ 🌿",
-                                id: `${prefix}alive`
+                                id: `${p}alive`
                             })
                         },
                         {
                             name: "quick_reply",
                             buttonParamsJson: JSON.stringify({
                                 display_text: "🧿 • ʙᴏᴛ ᴏᴡɴᴇʀ •",
-                                id: `${prefix}owner`
+                                id: `${p}owner`
                             })
                         },
                         {
@@ -695,12 +705,12 @@ Auto deploy and free ❕
                                             {
                                                 title: "💾 Download Commands",
                                                 description: "Get Song, Video, FB & TikTok downloader",
-                                                id: `${prefix}dmenu`
+                                                id: `${p}dmenu`
                                             },
                                             {
                                                 title: "👑 Owner Commands",
                                                 description: "System and Owner configurations",
-                                                id: `${prefix}ownermenu`
+                                                id: `${p}ownermenu`
                                             }
                                         ]
                                     }
@@ -713,8 +723,8 @@ Auto deploy and free ❕
         }, { quoted: msg });
 
     } catch (e) {
-        console.error("Menu Error:", e);
-        await sock.sendMessage(from, { text: "❌ Failed to load menu." }, { quoted: msg });
+        console.error("Menu Error Log:", e); // Console එකේ නියම error එක බලාගන්න
+        await bot.sendMessage(from, { text: `❌ Menu Error: ${e.message}` }, { quoted: msg });
     }
     break;
 }
