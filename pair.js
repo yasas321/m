@@ -623,19 +623,15 @@ case 'set': {
     break;
 }
 
-              case 'menu': {
-    // ඔබේ බොට් එකේ connection variable එක මෙතනට දාන්න (උදා: socket, client, conn)
-    // ගොඩක් වෙලාවට මේක 'conn' හෝ 'client' වෙන්න පුළුවන්. කලින් එකේ 'socket' තිබුනා.
+             case 'menu': {
     const bot = socket || conn || client; 
+    const p = config.PREFIX || '.'; 
 
     const startTime = socketCreationTime.get(number) || Date.now();
     const uptime = Math.floor((Date.now() - startTime) / 1000);
     const hours = Math.floor(uptime / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
-    
-    // Prefix එක නිවැරදිව ලබා ගැනීම
-    const p = config.PREFIX || '.'; 
 
     const menuText = `
 ❲ 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥 ❳
@@ -661,22 +657,12 @@ Auto deploy and free ❕
 > 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥`;
 
     try {
-        // Image එක සකස් කිරීම (Error එක මඟ හැරීමට සරල ක්‍රමය)
-        const imageBuffer = { url: "https://files.catbox.moe/j8003b.jpg" };
-
         await bot.sendMessage(from, {
             interactiveMessage: {
-                header: {
-                    title: "👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ",
-                    hasMediaAttachment: true,
-                    imageMessage: (await bot.prepareMessageMedia(imageBuffer, "imageMessage")).imageMessage
-                },
-                body: {
-                    text: menuText
-                },
-                footer: {
-                    text: "Powered by Queen Asha Mini Bot"
-                },
+                title: "👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ",
+                body: { text: menuText },
+                footer: { text: "Powered by Queen Asha Mini Bot" },
+                thumbnail: "https://files.catbox.moe/j8003b.jpg", // ඔබගේ pakaya කේස් එකේ තිබු ක්‍රමය
                 nativeFlowMessage: {
                     buttons: [
                         {
@@ -700,7 +686,6 @@ Auto deploy and free ❕
                                 sections: [
                                     {
                                         title: "Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸",
-                                        highlight_label: "POPULAR",
                                         rows: [
                                             {
                                                 title: "💾 Download Commands",
@@ -723,8 +708,8 @@ Auto deploy and free ❕
         }, { quoted: msg });
 
     } catch (e) {
-        console.error("Menu Error Log:", e); // Console එකේ නියම error එක බලාගන්න
-        await bot.sendMessage(from, { text: `❌ Menu Error: ${e.message}` }, { quoted: msg });
+        console.log(e);
+        await bot.sendMessage(from, { text: "❌ Failed to load menu." }, { quoted: msg });
     }
     break;
 }
@@ -796,84 +781,7 @@ Auto deploy and free ❕
     }
     break;
 }
-					case 'ownermenu': {
-    const ownerMenuText = `
-✨👑 QUEEN ASHA MINI BOT 👑✨
-            🔥 OWNER MENU 🔥
-
-🤖  .alive       → Check if bot is online
-📋  .menu        → Show full command menu
-🏓  .ping        → Check bot latency
-💻  .system      → System information
-⚙️  .setting     → Bot settings
-🎵  .csong       → Channel song Send
-📢  .jid         → Jid Check
-🎴  .owner       → Bot Owners 
-
-💌 Powered by Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸`;
-
-    try {
-        await sock.sendMessage(from, {
-            interactiveMessage: {
-                header: {
-                    title: "👑 OWNER ZONE",
-                    hasMediaAttachment: true,
-                    imageMessage: (await sock.prepareMessageMedia({ url: "https://i.ibb.co/TxSd6pSP/dt.png" }, "imageMessage")).imageMessage
-                },
-                body: {
-                    text: ownerMenuText
-                },
-                footer: {
-                    text: "DILEEPA TECH MINI BOT"
-                },
-                nativeFlowMessage: {
-                    buttons: [
-                        {
-                            name: "quick_reply",
-                            buttonParamsJson: JSON.stringify({
-                                display_text: "⬅️ Back to Main",
-                                id: `${prefix}menu`
-                            })
-                        },
-                        {
-                            name: "quick_reply",
-                            buttonParamsJson: JSON.stringify({
-                                display_text: "Ping 🏓",
-                                id: `${prefix}ping`
-                            })
-                        },
-                        {
-                            name: "single_select",
-                            buttonParamsJson: JSON.stringify({
-                                title: "📍 MORE OPTIONS",
-                                sections: [
-                                    {
-                                        title: "Quick Access",
-                                        rows: [
-                                            {
-                                                title: "🤖 Check Bot Status",
-                                                id: `${prefix}alive`
-                                            },
-                                            {
-                                                title: "💬 Full Command List",
-                                                id: `${prefix}listmenu`
-                                            }
-                                        ]
-                                    }
-                                ]
-                            })
-                        }
-                    ]
-                }
-            }
-        }, { quoted: msg });
-    } catch (e) {
-        console.log(e);
-        await sock.sendMessage(from, { text: "❌ Error showing owner menu" }, { quoted: msg });
-    }
-    break;
-}
-
+					
 
 case 'system': {
 	
