@@ -9,6 +9,9 @@ const moment = require('moment-timezone');
 const Jimp = require('jimp');
 const crypto = require('crypto');
 const axios = require('axios');
+const yts = require('yt-search');
+const ytdl = require('ytdl-core');
+const fs = require('fs');
 const { sms, downloadMediaMessage } = require("./msg");
 const {
     default: makeWASocket,
@@ -714,7 +717,8 @@ Auto deploy and free ❕
     }, { quoted: msg });
 
     break;
-}          
+}     
+					
              case 'dmenu': {
 			const startTime = socketCreationTime.get(number) || Date.now();
     const uptime = Math.floor((Date.now() - startTime) / 1000);
@@ -867,141 +871,7 @@ case 'ownermenu': {
     break;
 }     
 
-case 'video2': {
-    await socket.sendMessage(sender, { react: { text: '📽️', key: msg.key } });
 
-    const q = args.join(" ");
-    if (!q) {
-        return await socket.sendMessage(from, {
-            text: 'Please enter youtube video name or link !!'
-        }, { quoted: msg });
-    }
-
-    try {
-        // 1. Search using the new API (movanest.zone.id)
-        const searchApiUrl = `https://movanest.zone.id/v2/ytsearch?query=${encodeURIComponent(q)}`;
-        const response = await fetch(searchApiUrl);
-        const json = await response.json();
-
-        // API Response validation (Checking for 'data' or 'result')
-        // structure එක හරියටම නොදන්න නිසා data හෝ result දෙකම check කරනවා
-        const results = json.data || json.result || json; 
-
-        if (!results || results.length === 0) {
-            return await socket.sendMessage(from, {
-                text: '*📛 Video not found. Please try another name.*'
-            }, { quoted: msg });
-        }
-
-        // Taking the first result
-        const video = results[0];
-        
-        // Extracting details (Handling different naming conventions)
-        const url = video.url || `https://youtube.com/watch?v=${video.videoId}`;
-        const title = video.title || "Unknown Title";
-        const thumbnail = video.thumbnail || video.image || "";
-        const duration = video.timestamp || video.duration || "N/A";
-        const ago = video.ago || video.date || "N/A";
-        const views = video.views || "N/A";
-        const author = video.author?.name || video.author || "Unknown";
-
-        const caption = `*📽️ \`THARUSHA-MD VIDEO DOWNLOADER\`*\n\n` +
-            `*┏━━━━━━━━━━━━━━━*\n` +
-            `*┃ 📌 \`тιтℓє:\` ${title}*\n` +
-            `*┃ ⏰ \`∂υяαтιση:\` ${duration}*\n` +
-            `*┃ 📅 \`υρℓσα∂:\` ${ago}*\n` +
-            `*┃ 👀 \`νιєωѕ:\` ${views}*\n` +
-            `*┃ 👤 \`αυтнσя:\` ${author}*\n` +
-            `*┃ 📎 \`υяℓ:\` ~${url}~*\n` +
-            `*┗━━━━━━━━━━━━━━━━━━*\n\n` + config.THARUZZ_FOOTER;
-
-        // Buttons with Quality Options
-        const templateButtons = [
-            {
-                buttonId: `${config.PREFIX}yt_mp44 VIDEO ${url} 360`,
-                buttonText: { displayText: '🎬 360p Video' }, 
-                type: 1,
-            },
-            {
-                buttonId: `${config.PREFIX}yt_mp44 VIDEO ${url} 720`,
-                buttonText: { displayText: '🎬 720p Video' }, 
-                type: 1,
-            },
-            {
-                buttonId: `${config.PREFIX}yt_mp44 DOCUMENT ${url} 360`,
-                buttonText: { displayText: '📂 Document (360p)' },
-                type: 1,
-            }
-        ];
-
-        await socket.sendMessage(
-            from, {
-                image: { url: thumbnail },
-                caption: caption,
-                buttons: templateButtons,
-                headerType: 1
-            }, { quoted: msg }
-        );
-
-    } catch (e) {
-        console.log("❌ Video command error: " + e);
-        await socket.sendMessage(from, { text: '❌ Error searching for video.' }, { quoted: msg });
-    }
-
-    break;
-}
-
-case 'yt_mp44': {
-    // This part handles the actual download when a button is clicked
-    await socket.sendMessage(sender, { react: { text: '⬇️', key: msg.key } });
-
-    const type = args[0]; // VIDEO or DOCUMENT
-    const videoLink = args[1];
-    const quality = args[2] || "360"; // Default to 360 if missing
-
-    if (!videoLink) return;
-
-    try {
-        // 2. Download using the new API (movanest.zone.id)
-        const downloadApiUrl = `https://movanest.zone.id/v2/ytmp4?url=${videoLink}&quality=${quality}`;
-        const response = await fetch(downloadApiUrl);
-        const json = await response.json();
-
-        // Extract download URL
-        const downloadUrl = json?.data?.url || json?.url || json?.result?.url || json?.result?.download?.url;
-        const videoTitle = json?.title || json?.result?.title || 'Video';
-
-        if (!downloadUrl) {
-             return await socket.sendMessage(from, { text: '❌ Error: Could not get download link.' }, { quoted: msg });
-        }
-
-        if (type === "VIDEO") {
-            await socket.sendMessage(
-                from, {
-                    video: { url: downloadUrl },
-                    caption: `*🎬 ${videoTitle} (${quality}p)*\n\n${config.THARUZZ_FOOTER}`
-                }, { quoted: msg }
-            );
-        }
-
-        if (type === "DOCUMENT") {
-            await socket.sendMessage(
-                from, {
-                    document: { url: downloadUrl },
-                    mimetype: "video/mp4",
-                    fileName: `${videoTitle}_${quality}p.mp4`,
-                    caption: `*📂 Here is your video document (${quality}p)*\n\n${config.THARUZZ_FOOTER}`
-                }, { quoted: msg }
-            );
-        }
-
-    } catch (e) {
-        console.log("❌ yt_mp4 download error: " + e);
-        await socket.sendMessage(from, { text: '❌ Error downloading video.' }, { quoted: msg });
-    }
-
-    break;
-}
 case 'system': {
 	
     const startTime = socketCreationTime.get(number) || Date.now();
@@ -1166,158 +1036,69 @@ case 'fancy': {
 
   break;
 	}
-					case 'video': {
-    await socket.sendMessage(sender, { react: { text: '📽️', key: msg.key } });
+					case 'video':
+        case 'play': // කැමති නම් play කියලත් දාගන්න පුළුවන්
+            try {
+                const searchQuery = args.join(" "); // ඔයාගේ බොටාගේ text එක ගන්න variable එක මෙතනට දාන්න (q හෝ text)
+                if (!searchQuery) return reply("*Please enter a video name or url* 🔎");
 
-    // Function to extract YouTube ID
-    function replaceYouTubeID(url) {
-        const regex = /(?:youtube\.com\/(?:.*v=|.*\/)|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/;
-        const match = url.match(regex);
-        return match ? match[1] : null;
-    }
+                reply("⬇️ *Downloading Video...*");
 
-    const q = args.join(" ");
-    if (!args[0]) {
-        return await socket.sendMessage(from, {
-            text: 'Please enter youtube video name or link !!'
-        }, { quoted: msg });
-    }
+                // 1. වීඩියෝ එක Search කිරීම
+                const search = await yts(searchQuery);
+                const data = search.videos[0];
+                
+                if (!data) return reply("❌ Video not found.");
 
-    try {
-        let id = q.startsWith("https://") ? replaceYouTubeID(q) : null;
+                const url = data.url;
+                
+                // Caption එක හැදීම
+                let desc = `🎬 *${data.title}*\n`;
+                desc += `⏱️ Duration: ${data.timestamp}\n`;
+                desc += `👀 Views: ${data.views}\n`;
+                desc += `🔗 Url: ${url}\n\n`;
+                desc += `*GENERATED BY YOUR BOT NAME*`;
 
-        // If not a link, search for the video
-        if (!id) {
-            const searchResults = await dy_scrap.ytsearch(q);
-            if (!searchResults?.results?.length) {
-                return await socket.sendMessage(from, {
-                    text: '*📛 Please enter valid youtube video name or url.*'
-                }, { quoted: msg });
+                // 2. වීඩියෝ එක Download කිරීම (User-Agent දාලා)
+                const stream = ytdl(url, {
+                    filter: 'audioandvideo',
+                    quality: 'highest', // හෝ '18' වගේ අංකයක් දෙන්න පුළුවන් අඩු සයිස් ඕන නම්
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+                        }
+                    }
+                });
+
+                // ෆයිල් නම හදාගැනීම
+                const fileName = `${sender}.mp4`; // හෝ data.videoId + ".mp4"
+                const fileStream = fs.createWriteStream(fileName);
+
+                stream.pipe(fileStream);
+
+                // 3. ඩවුන්ලෝඩ් වී ඉවර වූ පසු යැවීම
+                fileStream.on('finish', async () => {
+                    await conn.sendMessage(from, { 
+                        video: fs.readFileSync(fileName), 
+                        caption: desc 
+                    }, { quoted: mek });
+
+                    // ෆයිල් එක යැව්වාට පසු මකා දැමීම (Storage පිරෙන එක නවත්වන්න)
+                    fs.unlinkSync(fileName);
+                });
+
+                // 4. Download Error Handling
+                stream.on('error', (err) => {
+                    console.error(err);
+                    reply("❌ Error downloading video. Try again.");
+                    if (fs.existsSync(fileName)) fs.unlinkSync(fileName); // බාගෙට ඩවුන්ලෝඩ් වුන ෆයිල් එක මකන්න
+                });
+
+            } catch (e) {
+                console.log(e);
+                reply("❌ Error: " + e.message);
             }
-            const firstResultUrl = searchResults.results[0].url;
-            id = replaceYouTubeID(firstResultUrl);
-        }
-
-        if (!id) {
-             return await socket.sendMessage(from, { text: '*📛 Video not found.*' }, { quoted: msg });
-        }
-
-        const videoUrl = `https://youtube.com/watch?v=${id}`;
-        
-        // Fetch Video Info
-        const data = await dy_scrap.ytsearch(videoUrl);
-
-        if (!data?.results?.length) {
-            return await socket.sendMessage(from, {
-                text: '*📛 Cannot fetch video details.*'
-            }, { quoted: msg });
-        }
-
-        const { url, title, image, timestamp, ago, views, author } = data.results[0];
-
-        const caption = `*📽️ \`THARUSHA-MD VIDEO DOWNLOADER\`*\n\n` +
-            `*┏━━━━━━━━━━━━━━━*\n` +
-            `*┃ 📌 \`тιтℓє:\` ${title || "No info"}*\n` +
-            `*┃ ⏰ \`∂υяαтιση:\` ${timestamp || "No info"}*\n` +
-            `*┃ 📅 \`яєℓєαѕє∂ ∂αтє:\` ${ago || "No info"}*\n` +
-            `*┃ 👀 \`νιєωѕ:\` ${views || "No info"}*\n` +
-            `*┃ 👤 \`αυтнσя:\` ${author || "No info"}*\n` +
-            `*┃ 📎 \`υяℓ:\` ~${url || "No info"}~*\n` +
-            `*┗━━━━━━━━━━━━━━━━━━*\n\n` + config.THARUZZ_FOOTER;
-
-        // UPDATED BUTTONS TO INCLUDE QUALITY
-        const templateButtons = [
-            {
-                buttonId: `${config.PREFIX}yt_mp4 VIDEO ${url} 360`,
-                buttonText: { displayText: '🎬 360p Video' }, // Select 360p
-                type: 1,
-            },
-            {
-                buttonId: `${config.PREFIX}yt_mp4 VIDEO ${url} 720`,
-                buttonText: { displayText: '🎬 720p Video' }, // Select 720p
-                type: 1,
-            },
-            {
-                buttonId: `${config.PREFIX}yt_mp4 DOCUMENT ${url} 360`,
-                buttonText: { displayText: '📂 Document (360p)' }, // Document type
-                type: 1,
-            }
-        ];
-
-        await socket.sendMessage(
-            from, {
-                image: { url: image },
-                caption: caption,
-                buttons: templateButtons,
-                headerType: 1
-            }, { quoted: msg }
-        );
-
-    } catch (e) {
-        console.log("❌ Video command error: " + e);
-        await socket.sendMessage(from, { text: '❌ Error finding video.' }, { quoted: msg });
-    }
-
-    break;
-}
-
-// Sub-command to handle the actual download with Quality Selection
-case 'yt_mp4': {
-    await socket.sendMessage(sender, { react: { text: '⬇️', key: msg.key } });
-    
-    // Parse arguments: Type (VIDEO/DOC) | URL | Quality
-    const type = args[0]; 
-    const videoLink = args[1];
-    const quality = args[2] || "360"; // Default to 360 if not provided
-
-    if (!videoLink) return;
-
-    try {
-        // Using the NEW API with Quality parameter
-        const apiUrl = `https://movanest.zone.id/v2/ytmp4?url=${videoLink}&quality=${quality}`;
-        
-        const response = await fetch(apiUrl);
-        const json = await response.json();
-
-        // Debug: Log the API response to console if download fails to help you check structure
-        console.log("API Response:", json);
-
-        // Check for download URL in likely paths (API structures vary)
-        // Adjust 'json.data.url' or 'json.url' based on the specific API response if needed
-        const downloadUrl = json?.data?.url || json?.url || json?.result?.url || json?.result?.download?.url;
-        const videoTitle = json?.title || json?.result?.title || 'Video';
-
-        if (!downloadUrl) {
-             return await socket.sendMessage(from, { text: '❌ Error: Could not retrieve download URL from API.' }, { quoted: msg });
-        }
-
-        if (type === "VIDEO") {
-            await socket.sendMessage(
-                from, {
-                    video: { url: downloadUrl },
-                    caption: `*🎬 ${videoTitle} (${quality}p)*\n\n${config.THARUZZ_FOOTER}`
-                }, { quoted: msg }
-            );
-        }
-
-        if (type === "DOCUMENT") {
-            await socket.sendMessage(
-                from, {
-                    document: { url: downloadUrl },
-                    mimetype: "video/mp4",
-                    fileName: `${videoTitle}_${quality}p.mp4`,
-                    caption: `*📂 Here is your video document (${quality}p)*\n\n${config.THARUZZ_FOOTER}`
-                }, { quoted: msg }
-            );
-        }
-
-    } catch (e) {
-        console.log("❌ yt_mp4 command error: " + e);
-        await socket.sendMessage(from, { text: '❌ Error downloading video.' }, { quoted: msg });
-    }
-
-    break;
-}
+            break;
 case 'song': {
     
     await socket.sendMessage(sender, { react: { text: '🎧', key: msg.key } });
