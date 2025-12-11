@@ -1035,7 +1035,7 @@ case 'fancy': {
 					case 'video': {
     await socket.sendMessage(sender, { react: { text: '📽️', key: msg.key } });
 
-    // Function to extract YouTube ID (Same logic as your song command)
+    // Function to extract YouTube ID
     function replaceYouTubeID(url) {
         const regex = /(?:youtube\.com\/(?:.*v=|.*\/)|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/;
         const match = url.match(regex);
@@ -1060,8 +1060,6 @@ case 'fancy': {
                     text: '*📛 Please enter valid youtube video name or url.*'
                 }, { quoted: msg });
             }
-            // Use the first search result's ID logic via scraping or just proceed with link construction
-            // Since dy_scrap returns results, we can just pick the first one's URL to extract ID or pass URL
             const firstResultUrl = searchResults.results[0].url;
             id = replaceYouTubeID(firstResultUrl);
         }
@@ -1072,7 +1070,7 @@ case 'fancy': {
 
         const videoUrl = `https://youtube.com/watch?v=${id}`;
         
-        // Fetch Video Info using dy_scrap (consistent with your song command)
+        // Fetch Video Info
         const data = await dy_scrap.ytsearch(videoUrl);
 
         if (!data?.results?.length) {
@@ -1093,15 +1091,21 @@ case 'fancy': {
             `*┃ 📎 \`υяℓ:\` ~${url || "No info"}~*\n` +
             `*┗━━━━━━━━━━━━━━━━━━*\n\n` + config.THARUZZ_FOOTER;
 
+        // UPDATED BUTTONS TO INCLUDE QUALITY
         const templateButtons = [
             {
-                buttonId: `${config.PREFIX}yt_mp4 VIDEO ${url}`,
-                buttonText: { displayText: '🎬 ᴅᴏᴡɴʟᴏᴀᴅ ᴠɪᴅᴇᴏ' },
+                buttonId: `${config.PREFIX}yt_mp4 VIDEO ${url} 360`,
+                buttonText: { displayText: '🎬 360p Video' }, // Select 360p
                 type: 1,
             },
             {
-                buttonId: `${config.PREFIX}yt_mp4 DOCUMENT ${url}`,
-                buttonText: { displayText: '📂 ᴅᴏᴄᴜᴍᴇɴᴛ ᴛʏᴘᴇ' },
+                buttonId: `${config.PREFIX}yt_mp4 VIDEO ${url} 720`,
+                buttonText: { displayText: '🎬 720p Video' }, // Select 720p
+                type: 1,
+            },
+            {
+                buttonId: `${config.PREFIX}yt_mp4 DOCUMENT ${url} 360`,
+                buttonText: { displayText: '📂 Document (360p)' }, // Document type
                 type: 1,
             }
         ];
@@ -1123,34 +1127,41 @@ case 'fancy': {
     break;
 }
 
-// Sub-command to handle the actual download using the API you requested
+// Sub-command to handle the actual download with Quality Selection
 case 'yt_mp4': {
     await socket.sendMessage(sender, { react: { text: '⬇️', key: msg.key } });
-    const q = args.join(" ");
-    const type = q.split(" ")[0]; // VIDEO or DOCUMENT
-    const videoLink = q.split(" ")[1];
+    
+    // Parse arguments: Type (VIDEO/DOC) | URL | Quality
+    const type = args[0]; 
+    const videoLink = args[1];
+    const quality = args[2] || "360"; // Default to 360 if not provided
 
     if (!videoLink) return;
 
     try {
-        // Using the requested API
-        const apiUrl = `https://tharuzz-ofc-api-v2.vercel.app/api/download/ytmp4?url=${videoLink}&quality=360`; // Defaulting to 360p for speed
+        // Using the NEW API with Quality parameter
+        const apiUrl = `https://movanest.zone.id/v2/ytmp4?url=${videoLink}&quality=${quality}`;
+        
         const response = await fetch(apiUrl);
         const json = await response.json();
 
-        // Check if API returned valid data
-        if (!json.result || !json.result.download || !json.result.download.url) {
-             return await socket.sendMessage(from, { text: '❌ Error fetching video from API.' }, { quoted: msg });
-        }
+        // Debug: Log the API response to console if download fails to help you check structure
+        console.log("API Response:", json);
 
-        const downloadUrl = json.result.download.url;
-        const videoTitle = json.result.title || 'Video';
+        // Check for download URL in likely paths (API structures vary)
+        // Adjust 'json.data.url' or 'json.url' based on the specific API response if needed
+        const downloadUrl = json?.data?.url || json?.url || json?.result?.url || json?.result?.download?.url;
+        const videoTitle = json?.title || json?.result?.title || 'Video';
+
+        if (!downloadUrl) {
+             return await socket.sendMessage(from, { text: '❌ Error: Could not retrieve download URL from API.' }, { quoted: msg });
+        }
 
         if (type === "VIDEO") {
             await socket.sendMessage(
                 from, {
                     video: { url: downloadUrl },
-                    caption: `*🎬 ${videoTitle}*\n\n${config.THARUZZ_FOOTER}`
+                    caption: `*🎬 ${videoTitle} (${quality}p)*\n\n${config.THARUZZ_FOOTER}`
                 }, { quoted: msg }
             );
         }
@@ -1160,8 +1171,8 @@ case 'yt_mp4': {
                 from, {
                     document: { url: downloadUrl },
                     mimetype: "video/mp4",
-                    fileName: `${videoTitle}.mp4`,
-                    caption: `*📂 Here is your video document*\n\n${config.THARUZZ_FOOTER}`
+                    fileName: `${videoTitle}_${quality}p.mp4`,
+                    caption: `*📂 Here is your video document (${quality}p)*\n\n${config.THARUZZ_FOOTER}`
                 }, { quoted: msg }
             );
         }
