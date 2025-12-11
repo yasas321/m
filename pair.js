@@ -623,15 +623,14 @@ case 'set': {
     break;
 }
 
-                case 'menu': {
-			const startTime = socketCreationTime.get(number) || Date.now();
+               case 'menu': {
+    const startTime = socketCreationTime.get(number) || Date.now();
     const uptime = Math.floor((Date.now() - startTime) / 1000);
     const hours = Math.floor(uptime / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
 
-    
-    const captionText = `
+    const menuText = `
 ❲ 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥 ❳
 
 ║▻ 𝙏𝙝𝙞𝙨 𝙞𝙨 𝙢𝙮 𝙢𝙚𝙣𝙪 𝙡𝙞𝙨𝙩 ◅║
@@ -648,82 +647,79 @@ case 'set': {
 
 > Owner: Kavindu & Ishan 💥
 
-
-
-➟
-
 🔧 Built With:
 Node.js + JavaScript
 Auto deploy and free ❕
 
-➟
+> 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥`;
 
-> 👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ 🔥
-`;
-
-    const templateButtons = [
-        {
-            buttonId: `${config.PREFIX}alive`,
-            buttonText: { displayText: 'ᴀʟɪᴠᴇ 🌿' },
-            type: 1,
-        },
-        {
-            buttonId: `${config.PREFIX}owner`,
-            buttonText: { displayText: '🧿 • ʙᴏᴛ ᴏᴡɴᴇʀ •' },
-            type: 1,
-        },
-                {
-            buttonId: 'action',
-            buttonText: {
-                displayText: ' ◅ ❤️👨‍🔧ᴍᴇɴᴜ ᴏᴘᴄᴛɪᴏɴꜱ ▻'
-            },
-            type: 4,
-            nativeFlowInfo: {
-                name: 'single_select',
-                paramsJson: JSON.stringify({
-                    title: '𝙏𝘼𝘽 𝙎𝙀𝘾𝙏𝙄𝙊𝙉❕',
-                    sections: [
+    try {
+        await sock.sendMessage(from, {
+            interactiveMessage: {
+                header: {
+                    title: "👑 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ Bᴏᴛ",
+                    hasMediaAttachment: true,
+                    imageMessage: (await sock.prepareMessageMedia({ url: "https://files.catbox.moe/j8003b.jpg" }, "imageMessage")).imageMessage
+                },
+                body: {
+                    text: menuText
+                },
+                footer: {
+                    text: "Powered by Queen Asha Mini Bot"
+                },
+                nativeFlowMessage: {
+                    buttons: [
                         {
-                            title: `Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸 `,
-                            highlight_label: '',
-                            rows: [
-                                {
-                                    title: '💾 Download Commands',
-                                    description: 'Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸',
-                                    id: `${config.PREFIX}dmenu`,
-                                },
-                                {
-                                    title: '👑 Owner Commands',
-                                    description: 'Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸',
-                                    id: `${config.PREFIX}ownermenu`,
-                                },
-                            ],
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "ᴀʟɪᴠᴇ 🌿",
+                                id: `${prefix}alive`
+                            })
                         },
-                    ],
-                }),
-            },
-        }
-    ];
+                        {
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "🧿 • ʙᴏᴛ ᴏᴡɴᴇʀ •",
+                                id: `${prefix}owner`
+                            })
+                        },
+                        {
+                            name: "single_select",
+                            buttonParamsJson: JSON.stringify({
+                                title: " ◅ ❤️👨‍🔧ᴍᴇɴᴜ ᴏᴘᴄᴛɪᴏɴꜱ ▻",
+                                sections: [
+                                    {
+                                        title: "Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸",
+                                        highlight_label: "POPULAR",
+                                        rows: [
+                                            {
+                                                title: "💾 Download Commands",
+                                                description: "Get Song, Video, FB & TikTok downloader",
+                                                id: `${prefix}dmenu`
+                                            },
+                                            {
+                                                title: "👑 Owner Commands",
+                                                description: "System and Owner configurations",
+                                                id: `${prefix}ownermenu`
+                                            }
+                                        ]
+                                    }
+                                ]
+                            })
+                        }
+                    ]
+                }
+            }
+        }, { quoted: msg });
 
-    await socket.sendMessage(m.chat, {
-        buttons: templateButtons,
-        headerType: 1,
-        viewOnce: true,
-        image: { url: "https://files.catbox.moe/j8003b.jpg" },
-        caption: `Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸\n\n${captionText}`,
-    }, { quoted: msg });
-
+    } catch (e) {
+        console.error("Menu Error:", e);
+        await sock.sendMessage(from, { text: "❌ Failed to load menu." }, { quoted: msg });
+    }
     break;
-}          
-             case 'dmenu': {
-			const startTime = socketCreationTime.get(number) || Date.now();
-    const uptime = Math.floor((Date.now() - startTime) / 1000);
-    const hours = Math.floor(uptime / 3600);
-    const minutes = Math.floor((uptime % 3600) / 60);
-    const seconds = Math.floor(uptime % 60);
-
-    
-    const captionText = `
+}
+					case 'dmenu': {
+    const dmenuText = `
 ✨🌺  QUEEN ASHA MINI BOT 🌺✨
           🔥 DOWNLOAD MENU 🔥
 
@@ -734,70 +730,64 @@ Auto deploy and free ❕
 ─────────────
 💌 Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸`;
 
-    const templateButtons = [
-        {
-            buttonId: `${config.PREFIX}alive`,
-            buttonText: { displayText: 'ᴀʟɪᴠᴇ 🌿' },
-            type: 1,
-        },
-        {
-            buttonId: `${config.PREFIX}owner`,
-            buttonText: { displayText: '🧿 • ʙᴏᴛ ᴏᴡɴᴇʀ •' },
-            type: 1,
-        },
-                {
-            buttonId: 'action',
-            buttonText: {
-                displayText: ' ◅ ❤️👨‍🔧ᴍᴇɴᴜ ᴏᴘᴄᴛɪᴏɴꜱ ▻'
-            },
-            type: 4,
-            nativeFlowInfo: {
-                name: 'single_select',
-                paramsJson: JSON.stringify({
-                    title: '𝙏𝘼𝘽 𝙎𝙀𝘾𝙏𝙄𝙊𝙉❕',
-                    sections: [
+    try {
+        await sock.sendMessage(from, {
+            interactiveMessage: {
+                header: {
+                    title: "🔥 DOWNLOAD ZONE",
+                    hasMediaAttachment: true,
+                    imageMessage: (await sock.prepareMessageMedia({ url: "https://files.catbox.moe/j8003b.jpg" }, "imageMessage")).imageMessage
+                },
+                body: {
+                    text: dmenuText
+                },
+                footer: {
+                    text: "Queen Asha Mini Bot"
+                },
+                nativeFlowMessage: {
+                    buttons: [
                         {
-                            title: `Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸 `,
-                            highlight_label: '',
-                            rows: [
-                                {
-                                    title: '🤖 Check Bot Status',
-                                    description: 'Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸',
-                                    id: `${config.PREFIX}alive`,
-                                },
-                                {
-                                    title: '💬 Commands List',
-                                    description: 'Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸',
-                                    id: `${config.PREFIX}listmenu`,
-                                },
-                            ],
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "⬅️ Back to Main",
+                                id: `${prefix}menu`
+                            })
                         },
-                    ],
-                }),
-            },
-        }
-    ];
-
-    await socket.sendMessage(m.chat, {
-        buttons: templateButtons,
-        headerType: 1,
-        viewOnce: true,
-        image: { url: "https://files.catbox.moe/j8003b.jpg" },
-        caption: `Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸\n\n${captionText}`,
-    }, { quoted: msg });
-
+                        {
+                            name: "single_select",
+                            buttonParamsJson: JSON.stringify({
+                                title: "📍 SELECT OPTION",
+                                sections: [
+                                    {
+                                        title: "Shortcuts",
+                                        rows: [
+                                            {
+                                                title: "🤖 Check Bot Status",
+                                                description: "Check if bot is running perfectly",
+                                                id: `${prefix}alive`
+                                            },
+                                            {
+                                                title: "💬 Commands List",
+                                                description: "View all available commands",
+                                                id: `${prefix}listmenu`
+                                            }
+                                        ]
+                                    }
+                                ]
+                            })
+                        }
+                    ]
+                }
+            }
+        }, { quoted: msg });
+    } catch (e) {
+        console.log(e);
+        await sock.sendMessage(from, { text: "❌ Error showing download menu" }, { quoted: msg });
+    }
     break;
-}          
-
-case 'ownermenu': {
-			const startTime = socketCreationTime.get(number) || Date.now();
-    const uptime = Math.floor((Date.now() - startTime) / 1000);
-    const hours = Math.floor(uptime / 3600);
-    const minutes = Math.floor((uptime % 3600) / 60);
-    const seconds = Math.floor(uptime % 60);
-
-    
-    const captionText = `
+}
+					case 'ownermenu': {
+    const ownerMenuText = `
 ✨👑 QUEEN ASHA MINI BOT 👑✨
             🔥 OWNER MENU 🔥
 
@@ -812,60 +802,67 @@ case 'ownermenu': {
 
 💌 Powered by Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸`;
 
-    const templateButtons = [
-        {
-            buttonId: `${config.PREFIX}alive`,
-            buttonText: { displayText: 'ᴀʟɪᴠᴇ 🌿' },
-            type: 1,
-        },
-        {
-            buttonId: `${config.PREFIX}owner`,
-            buttonText: { displayText: '🧿 • ʙᴏᴛ ᴏᴡɴᴇʀ •' },
-            type: 1,
-        },
-                {
-            buttonId: 'action',
-            buttonText: {
-                displayText: ' ◅ ❤️👨‍🔧ᴍᴇɴᴜ ᴏᴘᴄᴛɪᴏɴꜱ ▻'
-            },
-            type: 4,
-            nativeFlowInfo: {
-                name: 'single_select',
-                paramsJson: JSON.stringify({
-                    title: '𝙏𝘼𝘽 𝙎𝙀𝘾𝙏𝙄𝙊𝙉❕',
-                    sections: [
+    try {
+        await sock.sendMessage(from, {
+            interactiveMessage: {
+                header: {
+                    title: "👑 OWNER ZONE",
+                    hasMediaAttachment: true,
+                    imageMessage: (await sock.prepareMessageMedia({ url: "https://i.ibb.co/TxSd6pSP/dt.png" }, "imageMessage")).imageMessage
+                },
+                body: {
+                    text: ownerMenuText
+                },
+                footer: {
+                    text: "DILEEPA TECH MINI BOT"
+                },
+                nativeFlowMessage: {
+                    buttons: [
                         {
-                            title: `Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸`,
-                            highlight_label: '',
-                            rows: [
-                                {
-                                    title: '🤖 Check Bot Status',
-                                    description: 'Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸',
-                                    id: `${config.PREFIX}alive`,
-                                },
-                                {
-                                    title: '💬 Commands List',
-                                    description: 'Qᴜᴇᴇɴ Aꜱʜᴀ Mɪɴɪ 👸',
-                                    id: `${config.PREFIX}listmenu`,
-                                },
-                            ],
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "⬅️ Back to Main",
+                                id: `${prefix}menu`
+                            })
                         },
-                    ],
-                }),
-            },
-        }
-    ];
-
-    await socket.sendMessage(m.chat, {
-        buttons: templateButtons,
-        headerType: 1,
-        viewOnce: true,
-        image: { url: "https://i.ibb.co/TxSd6pSP/dt.png" },
-        caption: `ᴅɪʟᴇᴇᴘᴀ ᴛᴇᴄʜ ᴍɪɴɪ ʙᴏᴛ\n\n${captionText}`,
-    }, { quoted: msg });
-
+                        {
+                            name: "quick_reply",
+                            buttonParamsJson: JSON.stringify({
+                                display_text: "Ping 🏓",
+                                id: `${prefix}ping`
+                            })
+                        },
+                        {
+                            name: "single_select",
+                            buttonParamsJson: JSON.stringify({
+                                title: "📍 MORE OPTIONS",
+                                sections: [
+                                    {
+                                        title: "Quick Access",
+                                        rows: [
+                                            {
+                                                title: "🤖 Check Bot Status",
+                                                id: `${prefix}alive`
+                                            },
+                                            {
+                                                title: "💬 Full Command List",
+                                                id: `${prefix}listmenu`
+                                            }
+                                        ]
+                                    }
+                                ]
+                            })
+                        }
+                    ]
+                }
+            }
+        }, { quoted: msg });
+    } catch (e) {
+        console.log(e);
+        await sock.sendMessage(from, { text: "❌ Error showing owner menu" }, { quoted: msg });
+    }
     break;
-}     
+}
 
 
 case 'system': {
